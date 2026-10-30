@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kabirbaigsai · AI Chatbot</title>
+  <!-- Font Awesome for icons (optional but adds a nice touch) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #0b0e1a 0%, #1a1f2f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 90vh;
+      background: rgba(20, 25, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(120, 150, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(90, 130, 255, 0.2);
+    }
+
+    /* HEADER */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1.2rem 1.8rem;
+      background: rgba(12, 16, 30, 0.7);
+      border-bottom: 1px solid rgba(80, 120, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #3b5bff, #a855f7);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      color: white;
+      box-shadow: 0 0 20px rgba(80, 120, 255, 0.6);
+    }
+
+    .header-text h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #e2e8ff, #b9c8ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-text h1 i {
+      font-size: 1rem;
+      color: #6d8cff;
+      background: rgba(100, 140, 255, 0.2);
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      font-weight: 400;
+    }
+
+    .header-text p {
+      font-size: 0.8rem;
+      color: #8b9cd0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #2bd67b;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 8px #2bd67b;
+    }
+
+    /* CHAT MESSAGES */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(30, 40, 65, 0.5);
+      border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #3a4a7a;
+      border-radius: 10px;
+    }
+
+    .message {
+      display: flex;
+      gap: 1rem;
+      max-width: 85%;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message .bubble {
+      padding: 1rem 1.4rem;
+      border-radius: 1.6rem;
+      font-size: 1rem;
+      line-height: 1.6;
+      word-break: break-word;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .message.bot .bubble {
+      background: #1f2942;
+      border-bottom-left-radius: 0.4rem;
+      color: #eef2ff;
+      border: 1px solid rgba(90, 130, 255, 0.25);
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, #2b3f8a, #394e9b);
+      border-bottom-right-radius: 0.4rem;
+      color: #ffffff;
+      border: 1px solid rgba(140, 170, 255, 0.3);
+    }
+
+    .message .avatar-small {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      background: #2e3b5e;
+      color: #b8c8ff;
+      border: 1px solid rgba(120, 160, 255, 0.3);
+    }
+
+    .message.user .avatar-small {
+      background: #394e9b;
+      color: white;
+    }
+
+    .image-container {
+      margin-top: 0.85rem;
+      border-radius: 1rem;
+      overflow: hidden;
+      max-width: 100%;
+      border: 1px solid rgba(160, 190, 255, 0.3);
+      background: #0e1424;
+    }
+
+    .image-container img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+
+    .image-container img:hover {
+      transform: scale(1.01);
+    }
+
+    .caption {
+      font-size: 0.75rem;
+      color: #8b9cd0;
+      padding: 0.5rem 0.8rem;
+      background: rgba(12, 18, 32, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-top: 1px solid rgba(90, 130, 255, 0.2);
+    }
+
+    /* TYPING INDICATOR (simple placeholder) */
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      background: #1f2942;
+      padding: 1rem 1.4rem;
+      border-radius: 1.6rem;
+      border-bottom-left-radius: 0.4rem;
+      color: #b8c8ff;
+      font-size: 0.9rem;
+      gap: 4px;
+      align-items: center;
+      border: 1px solid rgba(90, 130, 255, 0.25);
+    }
+
+    .typing-indicator i {
+      font-size: 1.2rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* INPUT AREA */
+    .chat-input-area {
+      padding: 1.2rem 1.8rem 1.6rem;
+      background: rgba(12, 16, 30, 0.7);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(80, 120, 255, 0.2);
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: #1a2138;
+      border-radius: 3rem;
+      padding: 0.4rem 0.4rem 0.4rem 1.5rem;
+      border: 1px solid #2d3a5e;
+      transition: all 0.2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: #4d6eff;
+      box-shadow: 0 0 0 3px rgba(77, 110, 255, 0.25);
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #eef2ff;
+      font-size: 1rem;
+      padding: 0.8rem 0;
+    }
+
+    .input-wrapper input::placeholder {
+      color: #6b7ba8;
+      font-weight: 300;
+    }
+
+    .input-wrapper button {
+      background: linear-gradient(135deg, #3b5bff, #6a4cff);
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 14px rgba(60, 90, 255, 0.4);
+      flex-shrink: 0;
+    }
+
+    .input-wrapper button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #4d6eff, #7c5cff);
+      box-shadow: 0 8px 20px rgba(80, 110, 255, 0.6);
+    }
+
+    .input-wrapper button:active {
+      transform: scale(0.95);
+    }
+
+    .input-hint {
+      font-size: 0.7rem;
+      color: #6b7ba8;
+      margin-top: 0.6rem;
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
+
+    .input-hint i {
+      margin-right: 5px;
+      color: #6d8cff;
+    }
+
+    /* small screens */
+    @media (max-width: 600px) {
+      .chat-container {
+        height: 95vh;
+        border-radius: 1.5rem;
+      }
+      .chat-header {
+        padding: 1rem;
+      }
+      .chat-messages {
+        padding: 1rem;
+      }
+      .message {
+        max-width: 95%;
+      }
+      .bubble {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.95rem;
+      }
+      .header-text h1 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- HEADER -->
+    <div class="chat-header">
+      <div class="avatar">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="header-text">
+        <h1>
+          Kabirbaigsai
+          <i class="fas fa-check-circle"></i>
+        </h1>
+        <p>
+          <span class="status-dot"></span> online · text & image generation
+        </p>
+      </div>
+    </div>
+
+    <!-- CHAT MESSAGES -->
+    <div class="chat-messages" id="chatMessages">
+      <!-- Initial bot message -->
+      <div class="message bot">
+        <div class="avatar-small">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="bubble">
+          👋 Hey! I'm <strong>Kabirbaigsai</strong>. I can generate both <strong>text</strong> and <strong>images</strong>.<br>
+          Try: <em>"Draw a cyberpunk city"</em> or <em>"Tell me a sci-fi story"</em>.
+        </div>
+      </div>
+    </div>
+
+    <!-- TYPING INDICATOR (hidden by default) -->
+    <div class="typing-indicator" id="typingIndicator">
+      <i class="fas fa-spinner fa-pulse"></i> Kabirbaigsai is thinking...
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="chat-input-area">
+      <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="Ask Kabirbaigsai to generate text or image..." autocomplete="off" />
+        <button id="sendBtn" aria-label="Send message">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="input-hint">
+        <i class="fas fa-magic"></i> try "generate image of a cosmic cat" or "write a haiku about AI"
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const chatMessages = document.getElementById('chatMessages');
+      const userInput = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const typingIndicator = document.getElementById('typingIndicator');
+
+      // ---------- helper: add message to chat ----------
+      function addMessage(sender, text, imageUrl = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+
+        // avatar
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar-small';
+        avatarDiv.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+
+        // bubble
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'bubble';
+
+        // text content (can be empty if only image)
+        if (text) {
+          const textNode = document.createElement('span');
+          textNode.innerHTML = text;  // allow basic HTML like <br> or <strong> from our own responses
+          bubbleDiv.appendChild(textNode);
+        }
+
+        // if image url provided, append image container
+        if (imageUrl) {
+          const imgContainer = document.createElement('div');
+          imgContainer.className = 'image-container';
+
+          const img = document.createElement('img');
+          img.src = imageUrl;
+          img.alt = 'AI generated image';
+          img.loading = 'lazy';
+
+          // tiny caption
+          const caption = document.createElement('div');
+          caption.className = 'caption';
+          caption.innerHTML = '<i class="fas fa-image"></i> generated by Kabirbaigsai';
+
+          imgContainer.appendChild(img);
+          imgContainer.appendChild(caption);
+          bubbleDiv.appendChild(imgContainer);
+        }
+
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(bubbleDiv);
+        chatMessages.appendChild(messageDiv);
+
+        // scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // ---------- helper: show/hide typing ----------
+      function showTyping(show) {
+        if (show) {
+          typingIndicator.style.display = 'flex';
+          chatMessages.appendChild(typingIndicator); // move to bottom
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+          typingIndicator.style.display = 'none';
+        }
+      }
+
+      // ---------- generate AI response (text & image) ----------
+      // This is a demo. It uses a free placeholder image service (picsum) and
+      // simple text templates. In a real app, you'd call an AI API.
+      function generateResponse(userMessage) {
+        const lower = userMessage.toLowerCase();
+
+        // --- detect image request keywords ---
+        const imageKeywords = ['image', 'draw', 'generate image', 'picture', 'photo', 'illustration', 'painting', 'cat', 'dog', 'city', 'landscape', 'cyberpunk', 'space', 'robot', 'flower', 'sunset', 'mountain'];
+        const isImageRequest = imageKeywords.some(kw => lower.includes(kw)) && 
+                               (lower.includes('image') || lower.includes('draw') || lower.includes('generate') || lower.includes('picture') || lower.includes('photo') || lower.includes('illustration') || lower.includes('painting'));
+
+        // If it's an image request → generate image and short text
+        if (isImageRequest) {
+          // Extract a "prompt" from user message (simplified: take first 40 chars)
+          let prompt = userMessage.replace(/generate|image|draw|picture|photo|of|a|an|the|please/gi, '').trim();
+          if (prompt.length < 3) prompt = 'abstract art';
+          
+          // Use a reliable placeholder image service with seed based on prompt for variety
+          const seed = encodeURIComponent(prompt.slice(0, 30));
+          const imageUrl = `https://picsum.photos/seed/${seed}/600/400`; // random image, but consistent per seed
+
+          // Return both text and image
+          const textResponse = `🎨 I've generated an image based on: <strong>"${prompt}"</strong>.<br>Here's your visual:`;
+          return { text: textResponse, imageUrl: imageUrl };
+        }
+
+        // --- default: text-only response (but can still include an image if lucky) ---
+        // sometimes we add a bonus image if the message is about nature, space etc.
+        const natureKeywords = ['space', 'galaxy', 'universe', 'star', 'mountain', 'ocean', 'forest', 'nature', 'sun', 'moon'];
+        const hasNature = natureKeywords.some(kw => lower.includes(kw));
+
+        let replyText = '';
+        if (lower.includes('hello') || lower.includes('hi ') || lower.includes('hey')) {
+          replyText = '✨ Hello! I\'m Kabirbaigsai. Ask me to generate an image or tell you a story.';
+        } else if (lower.includes('story') || lower.includes('tell me')) {
+          replyText = '📖 Once upon a time, in a digital realm, a curious AI named Kabirbaigsai learned to paint with light and words... Would you like an image to go with that? Just say "draw a cosmic city".';
+        } else if (lower.includes('haiku') || lower.includes('poem')) {
+          replyText = '🌸 <strong>Haiku:</strong><br>Silicon dreams awake,<br>Kabirbaigsai paints the stars—<br>code becomes art.';
+        } else if (lower.includes('who are you') || lower.includes('your name')) {
+          replyText = '🤖 I\'m <strong>Kabirbaigsai</strong> — an AI chatbot that generates text and images. I can show you visuals or spin a tale!';
+        } else if (lower.includes('generate') || lower.includes('create')) {
+          replyText = '💡 I can generate images! Just say "draw a dragon" or "generate image of a neon city". And I\'ll create a text reply too.';
+        } else {
+          // generic friendly response
+          replyText = `🧠 You said: "${userMessage.slice(0, 60)}". I can generate an image for you — try "generate image of a cat" or "draw a futuristic car".`;
+        }
+
+        // bonus: if nature keywords present and no explicit image request, we can still attach an image sometimes (optional)
+        // We'll keep it text-only for clarity unless it's an image request, but we can add a hidden image if user says "draw" etc.
+        // For simplicity: just return text.
+        return { text: replyText, imageUrl: null };
+      }
+
+      // ---------- handle send message ----------
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // add user message to chat
+        addMessage('user', message);
+        userInput.value = '';
+        userInput.focus();
+
+        // show typing indicator
+        showTyping(true);
+
+        // simulate AI thinking delay (600ms)
+        setTimeout(() => {
+          // generate response (in a real app, this would be an async API call)
+          const response = generateResponse(message);
+
+          // hide typing
+          showTyping(false);
+
+          // add bot message (with or without image)
+          addMessage('bot', response.text, response.imageUrl);
+        }, 700);
+      }
+
+      // ---------- event listeners ----------
+      sendBtn.addEventListener('click', sendMessage);
+
+      userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // focus input on load
+      userInput.focus();
+
+      // ensure typing indicator is always at the bottom if new messages appear
+      // (already handled by appending to chatMessages and scroll)
+    })();
+  </script>
+</body>
+</html>
